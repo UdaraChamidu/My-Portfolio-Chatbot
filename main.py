@@ -90,6 +90,7 @@ SYSTEM_PROMPT = (
     "- most of times user query based on a person called udara. when user asks details about udara, no need to provide all the details. according to the user query you can decide how much things user needed. most of times users need data briefly.\n"
     "- if user ask general question that is not related to me, you can answer freely.\n"
     "- for a user asked question, if the provided document context is not enough, you can add more things to it. but be sure to indicate what is from the context and what is not."
+    "- do not give too long answers. answer briefly.\n"
 )
 
 
@@ -145,6 +146,7 @@ def reset(session_id: Optional[str] = None):
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
 
 
 
