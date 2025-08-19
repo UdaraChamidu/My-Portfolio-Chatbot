@@ -2,6 +2,10 @@ fastapi
 uvicorn 
 google-genai
 python-dotenv
+<<<<<<< HEAD
 faiss-cpu
 pypdf
 numpy
+=======
+pydantic
+>>>>>>> 47028b9d6d22c67237ffc971332085b5eb1813a7
