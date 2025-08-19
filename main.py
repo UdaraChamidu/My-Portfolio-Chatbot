@@ -92,8 +92,9 @@ SYSTEM_PROMPT = (
     "- if you have a history, check it also. sometimes it will be needed to answer."
     "- for a user asked question, if the provided document context is not enough, you can add more things to it. but be sure to indicate what is from the context and what is not."
     "- use points, bullets, paragraphs and other good ways you can use to answer for user query."
-    "- most of times user query based on a person called udara. when user asks details about udara, no need to provide all the detailse. according to the user query you can decide how mach things user needed. most of times users need data briefly"
+    "- most of times user query based on a person called udara. when user asks details about udara, no need to provide all the details. according to the user query you can decide how much things user needed. most of times users need data briefly"
 )
+
 def build_prompt(context_chunks: list, history: list, user_msg: str) -> str:  # <-- 3.9 compatible
     context_text = "\n\n---\n".join(context_chunks) if context_chunks else "No extra context."
     hist_text = ""
@@ -115,29 +116,19 @@ async def chat(req: ChatRequest):
     session_id = req.session_id or "default"
     history = SESSION_HISTORY.setdefault(session_id, [])
 
-    # 1) Retrieve relevant chunks
     context_chunks = retrieve_context(req.message, top_k=5)
+    prompt = build_prompt(context_chunks, history, req.message)
 
-    # 2) Build prompt text safely
-    context_text = "\n\n---\n".join(context_chunks) if context_chunks else "No extra context."
-    user_message_text = f"CONTEXT:\n{context_text}\n\nUSER: {req.message}"
-
-    # 3) Generate answer with Gemini
     resp = client.models.generate_content(
         model=GEN_MODEL,
-        contents=[
-            {"role": "system", "parts": [{"text": SYSTEM_PROMPT}]},
-            {"role": "user", "parts": [{"text": user_message_text}]},
-        ],
+        contents=[{"role": "user", "parts": [{"text": prompt}]}],
     )
 
     answer = resp.text.strip() if hasattr(resp, "text") else "Sorry, I couldn't generate a response."
 
-    # 4) Update session history
     history.append({"from": "user", "text": req.message})
     history.append({"from": "bot", "text": answer})
 
-    # Keep only the last MAX_TURNS
     if len(history) > 2 * MAX_TURNS:
         SESSION_HISTORY[session_id] = history[-2 * MAX_TURNS :]
 
@@ -146,7 +137,6 @@ async def chat(req: ChatRequest):
         "session_id": session_id,
         "context_used": context_chunks,
     }
-
 
 @app.get("/api/reset")
 def reset(session_id: Optional[str] = None):
@@ -157,6 +147,3 @@ def reset(session_id: Optional[str] = None):
 @app.get("/api/health")
 def health():
     return {"ok": True}
-
-
-
