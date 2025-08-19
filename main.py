@@ -8,9 +8,6 @@ import dotenv
 
 dotenv.load_dotenv()
 
-# Initialize the Google Gen AI client
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
 app = FastAPI()
 
 # Allow frontend (localhost + deployed Vercel) to talk with backend
@@ -26,6 +23,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Initialize the Google Gen AI client
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 class ChatRequest(BaseModel):
     message: str
