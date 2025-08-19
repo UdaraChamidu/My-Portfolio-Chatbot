@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import google.genai as genai
 from google.genai import types
@@ -11,6 +12,20 @@ dotenv.load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = FastAPI()
+
+# Allow frontend (localhost + deployed Vercel) to talk with backend
+origins = [
+    "http://localhost:5173",   # local dev
+    "https://udara-chamidu-portfolio.vercel.app/",  #  deployed frontend
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ChatRequest(BaseModel):
     message: str
