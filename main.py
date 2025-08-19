@@ -16,7 +16,7 @@ app = FastAPI()
 # Allow frontend (localhost + deployed Vercel) to talk with backend
 origins = [
     "http://localhost:5173",   # local dev
-    "https://udara-chamidu-portfolio.vercel.app/",  #  deployed frontend
+    "https://udara-chamidu-portfolio.vercel.app",  #  deployed frontend
 ]
 
 app.add_middleware(
