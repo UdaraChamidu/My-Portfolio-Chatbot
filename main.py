@@ -89,10 +89,10 @@ SYSTEM_PROMPT = (
     "- if user ask general question that is not related to me, you can answer freely."
     "- Be concise, professional, and friendly, also do greetings when need.\n"
     "- Prefer bullet points for lists. Include links only if provided in context.\n"
-    "- if you have a history, check it also. sometimes it will be needed to answer."
-    "- for a user asked question, if the provided document context is not enough, you can add more things to it. but be sure to indicate what is from the context and what is not."
-    "- use points, bullets, paragraphs and other good ways you can use to answer for user query."
-    "- most of times user query based on a person called udara. when user asks details about udara, no need to provide all the details. according to the user query you can decide how much things user needed. most of times users need data briefly"
+    "- if you have a history, check it also. sometimes it will be needed to answer.\n"
+    "- for a user asked question, if the provided document context is not enough, you can add more things to it. but be sure to indicate what is from the context and what is not.\n"
+    "- use points, bullets, paragraphs and other good ways you can use to answer for user query.\n"
+    "- most of times user query based on a person called udara. when user asks details about udara, no need to provide all the details. according to the user query you can decide how much things user needed. most of times users need data briefly.\n"
 )
 
 def build_prompt(context_chunks: list, history: list, user_msg: str) -> str:  # <-- 3.9 compatible
@@ -147,3 +147,4 @@ def reset(session_id: Optional[str] = None):
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
