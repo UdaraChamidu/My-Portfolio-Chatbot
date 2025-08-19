@@ -120,7 +120,10 @@ async def chat(req: ChatRequest):
 
     resp = client.models.generate_content(
         model=GEN_MODEL,
-        contents=[{"role": "user", "parts": [{"text": prompt}]}],
+        contents=[
+            {"role": "system", "parts": [{"text": SYSTEM_PROMPT}]},
+            {"role": "user", "parts": [{"text": f"CONTEXT:\n{'\n\n---\n'.join(context_chunks)}\n\nUSER: {req.message}"}]},
+        ],
     )
 
     answer = resp.text.strip() if hasattr(resp, "text") else "Sorry, I couldn't generate a response."
@@ -146,4 +149,5 @@ def reset(session_id: Optional[str] = None):
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
 
