@@ -7,6 +7,7 @@ import numpy as np
 import faiss
 import dotenv
 import google.genai as genai
+from typing import Optional  # <-- use Optional for 3.9
 
 dotenv.load_dotenv()
 
@@ -53,14 +54,13 @@ def load_store():
 
 load_store()
 
-# --- In-memory chat history (per session) ---
-# For production, move this to Redis/DB.
+# --- In-memory chat history ---
 SESSION_HISTORY = {}
 MAX_TURNS = 10  # keep last N user-bot turns
 
 class ChatRequest(BaseModel):
     message: str
-    session_id: str | None = None  # frontend can send a stable id
+    session_id: Optional[str] = None  # <-- fixed for Python 3.9
 
 def embed_query(text: str) -> np.ndarray:
     resp = client.models.embed_content(
@@ -68,7 +68,6 @@ def embed_query(text: str) -> np.ndarray:
         contents=[{"role": "user", "parts": [{"text": text}]}],
     )
     vec = np.array(resp.embeddings[0].values, dtype="float32")
-    # normalize for IP similarity
     faiss.normalize_L2(vec.reshape(1, -1))
     return vec
 
@@ -90,10 +89,10 @@ SYSTEM_PROMPT = (
     "- if user ask general question that is not related to me, you can answer freely."
     "- Be concise, professional, and friendly, also do greetings when need.\n"
     "- Prefer bullet points for lists. Include links only if provided in context.\n"
-    "- if you have a history, check it also. somethimes it will be needed to answer."
+    "- if you have a history, check it also. sometimes it will be needed to answer."
     "- for a user asked question, if the provided document context is not enough, you can add more things to it. but be sure to indicate what is from the context and what is not."
 )
-def build_prompt(context_chunks: list[str], history: list[dict], user_msg: str) -> str:
+def build_prompt(context_chunks: list, history: list, user_msg: str) -> str:  # <-- 3.9 compatible
     context_text = "\n\n---\n".join(context_chunks) if context_chunks else "No extra context."
     hist_text = ""
     for turn in history[-MAX_TURNS:]:
@@ -114,13 +113,9 @@ async def chat(req: ChatRequest):
     session_id = req.session_id or "default"
     history = SESSION_HISTORY.setdefault(session_id, [])
 
-    # 1) Retrieve relevant chunks
     context_chunks = retrieve_context(req.message, top_k=5)
-
-    # 2) Build prompt with context + history
     prompt = build_prompt(context_chunks, history, req.message)
 
-    # 3) Generate answer with Gemini
     resp = client.models.generate_content(
         model=GEN_MODEL,
         contents=[{"role": "user", "parts": [{"text": prompt}]}],
@@ -128,22 +123,20 @@ async def chat(req: ChatRequest):
 
     answer = resp.text.strip() if hasattr(resp, "text") else "Sorry, I couldn't generate a response."
 
-    # 4) Update history
     history.append({"from": "user", "text": req.message})
     history.append({"from": "bot", "text": answer})
 
-    # Keep only the last MAX_TURNS
     if len(history) > 2 * MAX_TURNS:
         SESSION_HISTORY[session_id] = history[-2 * MAX_TURNS :]
 
     return {
-        "response": answer,                 # ✅ fixed
+        "response": answer,
         "session_id": session_id,
-        "context_used": context_chunks,     # ✅ fixed
+        "context_used": context_chunks,
     }
 
 @app.get("/api/reset")
-def reset(session_id: str | None = None):
+def reset(session_id: Optional[str] = None):
     sid = session_id or "default"
     SESSION_HISTORY.pop(sid, None)
     return {"ok": True}
