@@ -12,7 +12,6 @@ dotenv.load_dotenv()
 
 app = FastAPI()
 
-<<<<<<< HEAD
 # --- CORS ---
 origins = [
     "http://localhost:5173",
@@ -21,23 +20,11 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,      # or ["*"] while testing
-=======
-# Allow frontend (localhost + deployed Vercel) to talk with backend
-origins = [
-    "http://localhost:5173",   # local dev
-    "https://udara-chamidu-portfolio.vercel.app",  #  deployed frontend
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
->>>>>>> 47028b9d6d22c67237ffc971332085b5eb1813a7
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-<<<<<<< HEAD
 # --- Gemini client ---
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 GEN_MODEL = os.getenv("GEN_MODEL", "gemini-2.5-flash")
@@ -70,10 +57,6 @@ load_store()
 # For production, move this to Redis/DB.
 SESSION_HISTORY = {}
 MAX_TURNS = 10  # keep last N user-bot turns
-=======
-# Initialize the Google Gen AI client
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
->>>>>>> 47028b9d6d22c67237ffc971332085b5eb1813a7
 
 class ChatRequest(BaseModel):
     message: str
