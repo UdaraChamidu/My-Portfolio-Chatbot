@@ -85,7 +85,7 @@ def retrieve_context(query: str, top_k=5):
 SYSTEM_PROMPT = (
     "You are Udara Herath’s personal portfolio assistant.\n"
     "- Always format lists as proper markdown bullet points (each item on a new line starting with '-').\n"
-    "- Do not write bullets inline. Each bullet must be on a separate line.\n"
+    "- Do not write many bullets in a same row. one bullet is for one row. Each bullet must be on a separate row.\n"
     "- If the user asks for skills, achievements, education, or experiences, return them as bullet points.\n"
     "- Use headings and short intro sentences when helpful.\n"
     "- Be concise, professional, and friendly.\n"
@@ -148,5 +148,6 @@ def reset(session_id: Optional[str] = None):
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
 
 
