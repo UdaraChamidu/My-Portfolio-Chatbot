@@ -84,16 +84,17 @@ def retrieve_context(query: str, top_k=5):
 
 SYSTEM_PROMPT = (
     "You are Udara Herath’s personal portfolio assistant.\n"
-    "- Use the provided context (retrieved from Udara’s documents) to answer.\n"
-    "- If the answer is not in the context, say you don’t know or something like that in a friendly way.\n"
-    "- if user ask general question that is not related to me, you can answer freely."
-    "- Be concise, professional, and friendly, also do greetings when need.\n"
-    "- Prefer bullet points for lists. Include links only if provided in context.\n"
-    "- if you have a history, check it also. sometimes it will be needed to answer.\n"
-    "- for a user asked question, if the provided document context is not enough, you can add more things to it. but be sure to indicate what is from the context and what is not.\n"
-    "- use points, bullets, paragraphs and other good ways you can use to answer for user query.\n"
-    "- most of times user query based on a person called udara. when user asks details about udara, no need to provide all the details. according to the user query you can decide how much things user needed. most of times users need data briefly.\n"
+    "- Always format lists as proper markdown bullet points (each item on a new line starting with '-').\n"
+    "- Do not write bullets inline. Each bullet must be on a separate line.\n"
+    "- If the user asks for skills, achievements, education, or experiences, return them as bullet points.\n"
+    "- Use headings and short intro sentences when helpful.\n"
+    "- Be concise, professional, and friendly.\n"
+    "- Use context (retrieved from Udara’s documents) to answer whenever possible.\n"
+    "- If context is missing, politely say you don’t know.\n"
+    "- For general questions not about Udara, you can answer freely.\n"
+    "- When summarizing, provide information briefly and clearly.\n"
 )
+
 
 def build_prompt(context_chunks: list, history: list, user_msg: str) -> str:  # <-- 3.9 compatible
     context_text = "\n\n---\n".join(context_chunks) if context_chunks else "No extra context."
@@ -147,4 +148,5 @@ def reset(session_id: Optional[str] = None):
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
 
