@@ -91,6 +91,8 @@ SYSTEM_PROMPT = (
     "- Prefer bullet points for lists. Include links only if provided in context.\n"
     "- if you have a history, check it also. sometimes it will be needed to answer."
     "- for a user asked question, if the provided document context is not enough, you can add more things to it. but be sure to indicate what is from the context and what is not."
+    "- use points, bullets, paragraphs and other good ways you can use to answer for user query."
+    "- most of times user query based on a person called udara. when user asks details about udara, no need to provide all the detailse. according to the user query you can decide how mach things user needed. most of times users need data briefly"
 )
 def build_prompt(context_chunks: list, history: list, user_msg: str) -> str:  # <-- 3.9 compatible
     context_text = "\n\n---\n".join(context_chunks) if context_chunks else "No extra context."
@@ -144,3 +146,4 @@ def reset(session_id: Optional[str] = None):
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
