@@ -2,3 +2,6 @@ fastapi
 uvicorn 
 google-genai
 python-dotenv
+faiss-cpu
+pypdf
+numpy
