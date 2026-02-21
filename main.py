@@ -29,7 +29,7 @@ allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
 origins_from_env = [
     normalize_origin(o) for o in allowed_origins_env.split(",") if normalize_origin(o)
 ]
-origins = list(dict.fromkeys(origins_from_env or default_origins))
+origins = list(dict.fromkeys(default_origins + origins_from_env))
 origin_regex = os.getenv("ALLOWED_ORIGIN_REGEX", "").strip() or None
 print("CORS allow_origins:", origins)
 if origin_regex:
