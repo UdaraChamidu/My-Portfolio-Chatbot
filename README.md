@@ -21,7 +21,7 @@ FastAPI backend for the portfolio chatbot.
 
 - `GEMINI_API_KEY` (required)
 - `GEN_MODEL` (optional, default: `gemini-2.5-flash`)
-- `EMBED_MODEL` (optional, default: `embedding-001`)
+- `EMBED_MODEL` (optional, default: `gemini-embedding-001`)
 - `STORE_DIR` (optional, default: `store`)
 - `ALLOWED_ORIGINS` (optional, comma-separated list)
   - Example: `http://localhost:5173,https://udara-chamidu-portfolio.vercel.app,https://udarachamidu.site,https://www.udarachamidu.site`

@@ -47,7 +47,7 @@ app.add_middleware(
 # --- Gemini client ---
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 GEN_MODEL = os.getenv("GEN_MODEL", "gemini-2.5-flash")
-EMBED_MODEL = os.getenv("EMBED_MODEL", "embedding-001")
+EMBED_MODEL = os.getenv("EMBED_MODEL", "gemini-embedding-001")
 
 # --- Vector store ---
 STORE_DIR = os.getenv("STORE_DIR", "store")
@@ -58,6 +58,8 @@ META_PATH = os.path.join(STORE_DIR, "meta.json")
 index = None
 chunks = []
 meta = {}
+warned_rag_model_mismatch = False
+warned_rag_embed_error = False
 
 def load_store():
     global index, chunks, meta
@@ -90,9 +92,38 @@ def embed_query(text: str) -> np.ndarray:
     return vec
 
 def retrieve_context(query: str, top_k=5):
+    global warned_rag_model_mismatch, warned_rag_embed_error
     if index is None:
         return []
-    q = embed_query(query)
+
+    # If index and query embedding models differ, avoid runtime failures and proceed without RAG.
+    store_model = meta.get("model")
+    if store_model and store_model != EMBED_MODEL:
+        if not warned_rag_model_mismatch:
+            print(
+                f"RAG disabled: store model '{store_model}' != EMBED_MODEL '{EMBED_MODEL}'. "
+                "Rebuild vector DB with build_vectordb.py."
+            )
+            warned_rag_model_mismatch = True
+        return []
+
+    try:
+        q = embed_query(query)
+    except Exception as e:
+        if not warned_rag_embed_error:
+            print(f"RAG embedding failed ({EMBED_MODEL}): {repr(e)}")
+            warned_rag_embed_error = True
+        return []
+
+    if q.shape[0] != index.d:
+        if not warned_rag_model_mismatch:
+            print(
+                f"RAG disabled: query vector dim {q.shape[0]} != index dim {index.d}. "
+                "Rebuild vector DB with build_vectordb.py."
+            )
+            warned_rag_model_mismatch = True
+        return []
+
     D, I = index.search(q.reshape(1, -1), top_k)
     ctx = []
     for idx in I[0]:

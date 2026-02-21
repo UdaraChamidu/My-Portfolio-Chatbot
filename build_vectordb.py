@@ -11,7 +11,7 @@ dotenv.load_dotenv()
 
 PDF_PATH = os.getenv("PDF_PATH", "data/cv.pdf")
 STORE_DIR = os.getenv("STORE_DIR", "store")
-EMBED_MODEL = os.getenv("EMBED_MODEL", "embedding-001")
+EMBED_MODEL = os.getenv("EMBED_MODEL", "gemini-embedding-001")
 
 os.makedirs(STORE_DIR, exist_ok=True)
 
