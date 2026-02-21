@@ -29,7 +29,7 @@ app.add_middleware(
 # --- Gemini client ---
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 GEN_MODEL = os.getenv("GEN_MODEL", "gemini-2.5-flash")
-EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-004")
+EMBED_MODEL = os.getenv("EMBED_MODEL", "models/embedding-001")
 
 # --- Vector store ---
 STORE_DIR = os.getenv("STORE_DIR", "store")
@@ -146,6 +146,7 @@ def reset(session_id: Optional[str] = None):
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
 
 
 
