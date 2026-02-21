@@ -14,13 +14,17 @@ dotenv.load_dotenv()
 app = FastAPI()
 
 # --- CORS ---
-origins = [
+default_origins = [
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "https://udara-chamidu-portfolio.vercel.app",
+    "https://udarachamidu.site"
 ]
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()] or default_origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,      # or ["*"] while testing
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
