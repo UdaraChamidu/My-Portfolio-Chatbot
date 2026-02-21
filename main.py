@@ -1,5 +1,5 @@
 # main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os, json
@@ -14,17 +14,31 @@ dotenv.load_dotenv()
 app = FastAPI()
 
 # --- CORS ---
+def normalize_origin(value: str) -> str:
+    # Normalize small formatting mistakes from env vars (quotes, trailing slash).
+    return value.strip().strip("'").strip('"').rstrip("/")
+
 default_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://udara-chamidu-portfolio.vercel.app",
-    "https://udarachamidu.site"
+    "https://udarachamidu.site",
+    "https://www.udarachamidu.site",
 ]
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
-origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()] or default_origins
+origins_from_env = [
+    normalize_origin(o) for o in allowed_origins_env.split(",") if normalize_origin(o)
+]
+origins = list(dict.fromkeys(origins_from_env or default_origins))
+origin_regex = os.getenv("ALLOWED_ORIGIN_REGEX", "").strip() or None
+print("CORS allow_origins:", origins)
+if origin_regex:
+    print("CORS allow_origin_regex:", origin_regex)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -115,31 +129,36 @@ def build_prompt(context_chunks: list, history: list, user_msg: str) -> str:  # 
     return prompt
 
 @app.post("/api/chat")
-async def chat(req: ChatRequest):
-    session_id = req.session_id or "default"
-    history = SESSION_HISTORY.setdefault(session_id, [])
+async def chat(req: ChatRequest, request: Request):
+    origin = request.headers.get("origin")
+    try:
+        session_id = req.session_id or "default"
+        history = SESSION_HISTORY.setdefault(session_id, [])
 
-    context_chunks = retrieve_context(req.message, top_k=5)
-    prompt = build_prompt(context_chunks, history, req.message)
+        context_chunks = retrieve_context(req.message, top_k=5)
+        prompt = build_prompt(context_chunks, history, req.message)
 
-    resp = client.models.generate_content(
-        model=GEN_MODEL,
-        contents=[{"role": "user", "parts": [{"text": prompt}]}],
-    )
+        resp = client.models.generate_content(
+            model=GEN_MODEL,
+            contents=[{"role": "user", "parts": [{"text": prompt}]}],
+        )
 
-    answer = resp.text.strip() if hasattr(resp, "text") else "Sorry, I couldn't generate a response."
+        answer = resp.text.strip() if hasattr(resp, "text") else "Sorry, I couldn't generate a response."
 
-    history.append({"from": "user", "text": req.message})
-    history.append({"from": "bot", "text": answer})
+        history.append({"from": "user", "text": req.message})
+        history.append({"from": "bot", "text": answer})
 
-    if len(history) > 2 * MAX_TURNS:
-        SESSION_HISTORY[session_id] = history[-2 * MAX_TURNS :]
+        if len(history) > 2 * MAX_TURNS:
+            SESSION_HISTORY[session_id] = history[-2 * MAX_TURNS :]
 
-    return {
-        "response": answer,
-        "session_id": session_id,
-        "context_used": context_chunks,
-    }
+        return {
+            "response": answer,
+            "session_id": session_id,
+            "context_used": context_chunks,
+        }
+    except Exception as e:
+        print(f"/api/chat failed. origin={origin} error={repr(e)}")
+        raise HTTPException(status_code=500, detail="Internal chatbot error")
 
 @app.get("/api/reset")
 def reset(session_id: Optional[str] = None):

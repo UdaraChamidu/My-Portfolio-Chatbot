@@ -24,7 +24,11 @@ FastAPI backend for the portfolio chatbot.
 - `EMBED_MODEL` (optional, default: `embedding-001`)
 - `STORE_DIR` (optional, default: `store`)
 - `ALLOWED_ORIGINS` (optional, comma-separated list)
-  - Example: `http://localhost:5173,https://udara-chamidu-portfolio.vercel.app`
+  - Example: `http://localhost:5173,https://udara-chamidu-portfolio.vercel.app,https://udarachamidu.site,https://www.udarachamidu.site`
+  - Do not wrap the value in quotes.
+  - Do not add trailing `/` to each origin.
+- `ALLOWED_ORIGIN_REGEX` (optional)
+  - Example: `^https://([a-z0-9-]+\\.)?udarachamidu\\.site$`
 
 ## Run Locally
 
@@ -51,4 +55,5 @@ const res = await fetch(`${API_BASE}/api/chat`, {
 ```
 
 4. On backend, set `ALLOWED_ORIGINS` to your frontend domain(s).
+5. If you use custom domains with and without `www`, include both or use `ALLOWED_ORIGIN_REGEX`.
  
